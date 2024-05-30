@@ -1,2 +1,2 @@
 # R-
-For Statistical Analysis with R
+For Text Mining and Statistical Analysis with R
