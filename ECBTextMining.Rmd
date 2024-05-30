@@ -1,0 +1,114 @@
+---
+title: "TextMining"
+author: "Kariba"
+date: "2024-05-30"
+output: html_document
+---
+
+**Loading libraries**
+
+```{r setup}
+
+library(tidytext)
+library(quanteda)
+library(wordcloud2)
+library(topicmodels)
+library(tidyverse)
+library(ggplot2)
+```
+
+**Data Loading**
+
+Loading the data
+
+```{r doc}
+doc_01 <- readRDS("c:\\Users\\Wairimu Kariba\\OneDrive\\Desktop\\My R\\input\\doc_01.rds")
+
+```
+
+**Tokenization and Text Cleaning**
+
+Tokenizing into individual words and removing stopwords to prepare for further analysis
+
+```{r clean data without stopwords}
+df_doc_01 <- tibble(page = 1:15, text = doc_01)
+tidy_doc_01 <- df_doc_01 %>% 
+  unnest_tokens(output = word, input = text) %>% 
+  anti_join(stop_words)
+```
+
+```{r print}
+df_doc_01
+```
+
+**Word Cloud Generation**
+
+Visually representing the frequency of words in the above doc_o1 to have a conspicous overview of the most prominent terms
+
+```{r Word Cloud}
+tidy_doc_01 %>% 
+  count(word, sort = TRUE) %>% 
+  wordcloud2(color = "random-light", backgroundColor = "black", shape = "cloud")
+word_count_doc_01 <- tidy_doc_01 %>% count(word, sort = TRUE)
+```
+
+**Bigram Analysis**
+
+Extracting common word pairs in the doc
+
+The most frequent bigrams are visualized using a bar plot
+
+```{r ngrams}
+bigram_doc_01 <- df_doc_01 %>% 
+  unnest_tokens(output = bigram, input = text, token = "ngrams", n = 2) %>% 
+  count(bigram, sort = TRUE)
+```
+
+```{r Bar plot for bigrams}
+  
+bigram_doc_01 %>% 
+  filter(n > 2) %>% # Filter for most common bigrams
+  ggplot(aes(x = reorder(bigram, n), y = n)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(title = "Most Common Bigrams", x = "Bigram", y = "Count") +
+  theme_minimal()
+```
+
+**Sentiment Analysis**
+
+Bing Lexicon analysis to classify words as positive or negative
+
+The overall sentiment score for each word is calculated and visualized
+
+```{r Positive Sentiment}
+bing_positive <- get_sentiments("bing") %>% 
+  filter(sentiment == "positive")
+
+positive_sort <- tidy_doc_01 %>% 
+  inner_join(bing_positive) %>% 
+  count(word, sort = TRUE)
+
+bing_positive 
+```
+
+```{r Sentiment Analysis}
+ecb_sentiment <- tidy_doc_01 %>% 
+  inner_join(get_sentiments("bing")) %>% 
+  count(word, sentiment, sort = TRUE) %>% 
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>% 
+  mutate(sentiment = positive - negative)
+ecb_sentiment  
+```
+
+```{r Bar plot for overall sentiment}
+ggplot(ecb_sentiment, aes(x = reorder(word, sentiment), y = sentiment, fill = sentiment > 0)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("red", "green"), labels = c("Negative", "Positive")) +
+  labs(title = "Overall Sentiment Score", x = "Words", y = "Sentiment Score") +
+  coord_flip() +
+  theme_minimal()
+```
+
+```{rm(list = ls())}
+```
