@@ -1,5 +1,5 @@
 # R-
-For Text Mining and Statistical Analysis with R
+For Text Mining and Sentiment Analysis with R
 
 # **Objective**
 This project aims to apply text mining techniques and sentiment analysis to the progress on the investigation phase of a digital euro report by the European Central Bank (ECB).
